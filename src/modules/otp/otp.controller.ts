@@ -30,6 +30,8 @@ export class OtpController {
     const { phone, code } = body;
     const isValid = await this.otpService.verify(phone, code);
 
+    console.log('OTP verify controller return:', { verified: isValid });
+
     return {
       verified: isValid,
     };
