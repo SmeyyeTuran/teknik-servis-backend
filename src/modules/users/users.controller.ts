@@ -1,5 +1,17 @@
-import { Controller, Get, Post, Patch, Delete, Param, Body, Query } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Patch,
+  Delete,
+  Param,
+  Body,
+  Query,
+} from '@nestjs/common';
+
 import { UsersService } from './users.service';
+import { UserRole } from './entities/user.entity';
+import { ParseEnumPipe } from '@nestjs/common';
 
 @Controller('users')
 export class UsersController {
@@ -10,8 +22,11 @@ export class UsersController {
     return this.usersService.create(createDto);
   }
 
+  
   @Get()
-  findAll(@Query('role') role?: 'customer' | 'technician' | 'admin') {
+  findByRole(
+    @Query('role', new ParseEnumPipe(UserRole)) role?: UserRole,
+  ) {
     if (role) {
       return this.usersService.findByRole(role);
     }
