@@ -5,6 +5,7 @@ import { OtpService } from '../otp/otp.service';
 import { RegisterDto, LoginDto, SendOtpDto } from './dto';
 import { UserRole } from '../users/entities/user.entity';
 
+
 @Injectable()
 export class AuthService {
   constructor(
@@ -18,18 +19,16 @@ export class AuthService {
    */
   async register(registerDto: RegisterDto) {
     const { firstName, lastName, phone, email } = registerDto;
-
-    // Telefon numarası temizle
     const cleanPhone = phone.replace(/[^0-9+]/g, '');
 
     // Kullanıcı zaten var mı kontrol et
-    const existingUser = this.usersService.findByPhone(cleanPhone);
+    const existingUser = await this.usersService.findByPhone(cleanPhone);
     if (existingUser) {
       throw new BadRequestException('Phone number already registered');
     }
 
     // Yeni kullanıcı oluştur
-    const user = this.usersService.create({
+    const user = await this.usersService.create({
       firstName,
       lastName,
       phone: cleanPhone,
@@ -52,12 +51,10 @@ export class AuthService {
    */
   async login(loginDto: LoginDto) {
     const { phone, otpCode } = loginDto;
-
-    // Telefon numarasını temizle
     const cleanPhone = phone.replace(/[^0-9+]/g, '');
 
     // Kullanıcı var mı kontrol et
-    const user = this.usersService.findByPhone(cleanPhone);
+    const user = await this.usersService.findByPhone(cleanPhone);
     if (!user) {
       throw new UnauthorizedException('User not found');
     }
@@ -70,7 +67,7 @@ export class AuthService {
 
     // Telefonu doğrulanmış olarak işaretle
     if (!user.phoneVerified) {
-      this.usersService.verifyPhone(user.id);
+      await this.usersService.verifyPhone(user.id);
     }
 
     // JWT token oluştur
@@ -103,7 +100,7 @@ export class AuthService {
     const cleanPhone = phone.replace(/[^0-9+]/g, '');
 
     // Kullanıcı var mı kontrol et
-    const user = this.usersService.findByPhone(cleanPhone);
+    const user = await this.usersService.findByPhone(cleanPhone);
     if (!user) {
       throw new BadRequestException('User not found. Please register first.');
     }
@@ -123,7 +120,7 @@ export class AuthService {
   async validateToken(token: string) {
     try {
       const payload = this.jwtService.verify(token);
-      const user = this.usersService.findOne(payload.sub);
+      const user = await this.usersService.findOne(payload.sub);
 
       return {
         id: user.id,
@@ -142,7 +139,7 @@ export class AuthService {
    * JWT Strategy için kullanıcı doğrulama
    */
   async validateUser(userId: string) {
-    const user = this.usersService.findOne(userId);
+    const user = await this.usersService.findOne(userId);
     if (!user) {
       throw new UnauthorizedException('User not found');
     }
@@ -161,8 +158,8 @@ export class AuthService {
    * Çıkış yap (OTP temizle)
    */
   async logout(userId: string) {
-    const user = this.usersService.findOne(userId);
-    this.otpService.clear(user.phone);
+    const user = await this.usersService.findOne(userId);
+    await this.otpService.clear(user.phone);
 
     return {
       success: true,
