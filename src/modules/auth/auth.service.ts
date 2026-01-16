@@ -3,6 +3,7 @@ import { JwtService } from '@nestjs/jwt';
 import { UsersService } from '../users/users.service';
 import { OtpService } from '../otp/otp.service';
 import { RegisterDto, LoginDto, SendOtpDto } from './dto';
+import { UserRole } from '../users/entities/user.entity';
 
 @Injectable()
 export class AuthService {
@@ -16,7 +17,7 @@ export class AuthService {
    * Kullanıcı kayıt
    */
   async register(registerDto: RegisterDto) {
-    const { name, phone, email } = registerDto;
+    const { firstName, lastName, phone, email } = registerDto;
 
     // Telefon numarası temizle
     const cleanPhone = phone.replace(/[^0-9+]/g, '');
@@ -29,10 +30,11 @@ export class AuthService {
 
     // Yeni kullanıcı oluştur
     const user = this.usersService.create({
-      name,
+      firstName,
+      lastName,
       phone: cleanPhone,
       email,
-      role: 'customer',
+      role: UserRole.CUSTOMER,
     });
 
     // OTP gönder
@@ -85,7 +87,8 @@ export class AuthService {
       accessToken,
       user: {
         id: user.id,
-        name: user.name,
+        firstName: user.firstName,
+        lastName: user.lastName,
         phone: user.phone,
         email: user.email,
         role: user.role,
@@ -124,7 +127,8 @@ export class AuthService {
 
       return {
         id: user.id,
-        name: user.name,
+        firstName: user.firstName,
+        lastName: user.lastName,
         phone: user.phone,
         email: user.email,
         role: user.role,
@@ -145,7 +149,8 @@ export class AuthService {
 
     return {
       id: user.id,
-      name: user.name,
+      firstName: user.firstName,
+      lastName: user.lastName,
       phone: user.phone,
       email: user.email,
       role: user.role,
