@@ -2,11 +2,19 @@ import { Injectable, NotFoundException, ConflictException } from '@nestjs/common
 
 import { UserRole } from './entities/user.entity';
 
-export interface User {
+export type CreateUserInput = {
+  firstName: string;
+  lastName: string;
+  phone: string;
+  email?: string;
+  role: UserRole;
+};
+
+export interface UserModel {
   id: string;
   firstName: string;
   lastName: string;
-  phoneNumber: string;
+  phone: string;
   email?: string;
   role: UserRole;
   phoneVerified: boolean;
@@ -16,12 +24,12 @@ export interface User {
 
 @Injectable()
 export class UsersService {
-  private users: User[] = [
+  private users: UserModel[] = [
     {
       id: 'USER-001',
       firstName: 'Test',
       lastName: 'Müşteri',
-      phoneNumber: '+905551234567',
+      phone: '+905551234567',
       email: 'test@customer.com',
       role: UserRole.CUSTOMER,
       phoneVerified: true,
@@ -31,32 +39,37 @@ export class UsersService {
   ];
   private idCounter = 2;
 
-  create(data: Omit<User, 'id' | 'createdAt' | 'phoneVerified'>): User {
-    const exists = this.users.find(u => u.phoneNumber === data.phoneNumber);
+  async create(data: CreateUserInput): Promise<UserModel> {
+    const exists = this.users.find(u => u.phone === data.phone);
     if (exists) {
       throw new ConflictException('Phone number already registered');
     }
 
-    const user: User = {
+    const user: UserModel = {
       id: `USER-${String(this.idCounter++).padStart(3, '0')}`,
-      ...data,
+      firstName: data.firstName,
+      lastName: data.lastName,
+      phone: data.phone,
+      email: data.email,
+      role: data.role,
       phoneVerified: false,
       createdAt: new Date().toISOString(),
     };
+
 
     this.users.push(user);
     return user;
   }
 
-  findAll(): User[] {
+  findAll(): UserModel[] {
     return this.users;
   }
 
-  findByRole(role: User['role']): User[] {
+  findByRole(role: UserModel['role']): UserModel[] {
     return this.users.filter(u => u.role === role);
   }
 
-  findOne(id: string): User {
+  findOne(id: string): UserModel {
     const user = this.users.find(u => u.id === id);
     if (!user) {
       throw new NotFoundException(`User with ID ${id} not found`);
@@ -64,11 +77,11 @@ export class UsersService {
     return user;
   }
 
-  findByPhone(phone: string): User | undefined {
+  findByPhone(phone: string): UserModel | undefined {
     return this.users.find(u => u.phone === phone);
   }
 
-  update(id: string, data: Partial<User>): User {
+  update(id: string, data: Partial<UserModel>): UserModel {
     const index = this.users.findIndex(u => u.id === id);
     if (index === -1) {
       throw new NotFoundException(`User with ID ${id} not found`);
@@ -83,7 +96,7 @@ export class UsersService {
     return this.users[index];
   }
 
-  verifyPhone(id: string): User {
+  verifyPhone(id: string): UserModel {
     return this.update(id, { phoneVerified: true });
   }
 
