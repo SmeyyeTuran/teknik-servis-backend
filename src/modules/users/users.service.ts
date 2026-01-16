@@ -1,11 +1,14 @@
 import { Injectable, NotFoundException, ConflictException } from '@nestjs/common';
 
+import { UserRole } from './entities/user.entity';
+
 export interface User {
   id: string;
-  name: string;
-  phone: string;
+  firstName: string;
+  lastName: string;
+  phoneNumber: string;
   email?: string;
-  role: 'customer' | 'technician' | 'admin';
+  role: UserRole;
   phoneVerified: boolean;
   createdAt: string;
   updatedAt?: string;
@@ -16,19 +19,20 @@ export class UsersService {
   private users: User[] = [
     {
       id: 'USER-001',
-      name: 'Test Müşteri',
-      phone: '+905551234567',
+      firstName: 'Test',
+      lastName: 'Müşteri',
+      phoneNumber: '+905551234567',
       email: 'test@customer.com',
-      role: 'customer',
+      role: UserRole.CUSTOMER,
       phoneVerified: true,
       createdAt: '2024-01-01T00:00:00.000Z',
     },
+
   ];
   private idCounter = 2;
 
   create(data: Omit<User, 'id' | 'createdAt' | 'phoneVerified'>): User {
-    // Telefon numarası kontrolü
-    const exists = this.users.find(u => u.phone === data.phone);
+    const exists = this.users.find(u => u.phoneNumber === data.phoneNumber);
     if (exists) {
       throw new ConflictException('Phone number already registered');
     }
