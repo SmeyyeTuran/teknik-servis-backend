@@ -10,7 +10,7 @@ import {
 } from '@nestjs/common';
 
 import { UsersService } from './users.service';
-import { UserRole } from './entities/user.entity';
+import { UserRole, User } from './entities/user.entity';
 import { ParseEnumPipe } from '@nestjs/common';
 
 @Controller('users')

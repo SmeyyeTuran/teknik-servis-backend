@@ -1,11 +1,10 @@
 import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn } from 'typeorm';
 import { Exclude } from 'class-transformer';
 
-// ✅ Bu enum'u ekle (YENİ)
 export enum UserRole {
-  CUSTOMER = 'CUSTOMER',
-  TECHNICIAN = 'TECHNICIAN',
-  ADMIN = 'ADMIN',
+  CUSTOMER = 'customer',
+  TECHNICIAN = 'technician',
+  ADMIN = 'admin',
 }
 
 @Entity('users')
@@ -13,12 +12,14 @@ export class User {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
+  @Column({ unique: true, nullable: true })
+  phone: string;
+
+  @Column({ default: false })
+  phoneVerified: boolean;
+
   @Column({ unique: true })
   email: string;
-
-  @Column()
-  @Exclude()
-  password: string;
 
   @Column()
   firstName: string;
@@ -26,13 +27,10 @@ export class User {
   @Column()
   lastName: string;
 
-  @Column({ nullable: true })
-  phoneNumber?: string;
+  @Column()
+  @Exclude()
+  password: string;
 
-  @Column({ default: false })
-  phoneVerified: boolean;
-
-  // ✅ Bu kısmı değiştir
   @Column({ 
     type: 'enum',
     enum: UserRole,

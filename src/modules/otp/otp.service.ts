@@ -9,14 +9,16 @@ export class OtpService {
   private twilioClient: twilio.Twilio;
   private otpStore = new Map<string, { code: string; expiresAt: number }>();
 
-  constructor(private configService: ConfigService, private smsService: SmsService) {
-    const accountSid = this.configService.get<string>('TWILIO_ACCOUNT_SID');
-    const authToken = this.configService.get<string>('TWILIO_AUTH_TOKEN');
-    
-    if (accountSid && authToken) {
-      this.twilioClient = twilio(accountSid, authToken);
+  constructor(
+    private configService: ConfigService,
+    private smsService: SmsService,
+  ) {
+    const provider = this.configService.get<string>('SMS_PROVIDER');
+    if (!provider) {
+      this.logger.error('SMS_PROVIDER env tanımlı değil');
     }
   }
+
 
   private generateOTP(): string {
     return Math.floor(100000 + Math.random() * 900000).toString();
@@ -31,10 +33,19 @@ export class OtpService {
     // Geliştirme ortamında konsola yazdır
     console.log(`📱 ${phoneNumber} için OTP kodu: ${code}`);
     
-    await this.smsService.send({
-      to: phoneNumber,
-      message: `Teknik Servis doğrulama kodunuz: ${code}`
-    });
+    try {
+      await this.smsService.send({
+        to: phoneNumber,
+        message: `Teknik Servis doğrulama kodunuz: ${code}`,
+      });
+    } catch (error) {
+      this.logger.error(
+        `OTP SMS gönderilemedi: ${phoneNumber}`,
+        error?.stack || error,
+      );
+      throw new Error('SMS gönderilemedi');
+    }
+
     
     return {
       message: 'OTP başarıyla gönderildi',

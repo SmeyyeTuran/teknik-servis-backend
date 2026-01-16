@@ -37,7 +37,8 @@ export class AuthService {
     });
 
     // OTP gönder
-    //await this.otpService.generate(cleanPhone);
+    await this.otpService.generate(cleanPhone);
+
 
     return {
       success: true,
