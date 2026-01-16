@@ -1,27 +1,40 @@
 import { Controller, Post, Body } from '@nestjs/common';
+import { ApiBody, ApiTags, ApiExtraModels, getSchemaPath, ApiConsumes } from '@nestjs/swagger';
 import { OtpService } from './otp.service';
+import { VerifyOtpDto } from './dto/verify-otp.dto';
 
+@ApiExtraModels(VerifyOtpDto)
+@ApiTags('otp')
 @Controller('otp')
 export class OtpController {
   constructor(private readonly otpService: OtpService) {}
 
-  /**
-   * OTP gönder
-   * POST /api/v1/otp/send
-   */
-  @Post('send')
-  async sendOtp(@Body('phoneNumber') phoneNumber: string) {
-    return this.otpService.sendOTP(phoneNumber); // sendOtp → sendOTP
-  }
-
-  /**
-   * OTP doğrula
-   * POST /api/v1/otp/verify
-   */
   @Post('verify')
-  async verifyOtp(@Body() body: { phoneNumber: string; code: string }) {
-    const { phoneNumber, code } = body;
-    const isValid = await this.otpService.verifyOTP(phoneNumber, code); // verifyOtp → verifyOTP
-    return { success: isValid, message: isValid ? 'Kod doğrulandı' : 'Geçersiz kod' };
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        phone: {
+          type: 'string',
+          example: '+905XXXXXXXXX',
+        },
+        code: {
+          type: 'string',
+          example: '123456',
+        },
+      },
+      required: ['phone', 'code'],
+    },
+  })
+  async verifyOtp(@Body() body: { phone: string; code: string }) {
+    const { phone, code } = body;
+    const isValid = await this.otpService.verify(phone, code);
+
+    console.log('OTP verify controller return:', { verified: isValid });
+
+    return {
+      verified: isValid,
+    };
+
   }
 }
