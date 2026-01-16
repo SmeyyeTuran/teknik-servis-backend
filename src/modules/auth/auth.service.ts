@@ -18,8 +18,9 @@ export class AuthService {
    * Kullanıcı kayıt
    */
   async register(registerDto: RegisterDto) {
-    const { firstName, lastName, phone, email } = registerDto;
+    const { firstName, lastName, phone } = registerDto;
     const cleanPhone = phone.replace(/[^0-9+]/g, '');
+
 
     // Kullanıcı zaten var mı kontrol et
     const existingUser = await this.usersService.findByPhone(cleanPhone);
@@ -32,7 +33,6 @@ export class AuthService {
       firstName,
       lastName,
       phone: cleanPhone,
-      email,
       role: UserRole.CUSTOMER,
     });
 
